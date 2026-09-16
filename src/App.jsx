@@ -309,7 +309,7 @@ export function App() {
 
             {/* Course Completion Celebration Screen */}
             {completedLessons.size === LESSONS.length && (
-              <div className="neu-flat animate-fade-in" style={{ padding: '40px', textAlign: 'center', borderRadius: '24px', margin: '20px 0' }}>
+              <div className="neu-flat animate-fade-in" style={{ padding: '40px', textAlign: 'center', borderRadius: '24px' }}>
                 <div style={{ fontSize: '54px', marginBottom: '16px' }}>🏆</div>
                 <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '12px', color: 'var(--git-orange)' }}>
                   Congratulations! You Mastered Git!

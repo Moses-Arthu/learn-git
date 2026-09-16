@@ -121,7 +121,7 @@ export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLes
             Achievements
           </span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {BADGES.map(badge => {
             const isUnlocked = completedCount >= badge.minScore;
             return (
@@ -129,7 +129,7 @@ export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLes
                 key={badge.id}
                 title={`${badge.name}: ${badge.desc}`}
                 style={{
-                  padding: '8px',
+                  padding: '8px 12px',
                   borderRadius: '10px',
                   display: 'flex',
                   alignItems: 'center',
@@ -140,8 +140,8 @@ export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLes
                 }}
                 className={isUnlocked ? "neu-flat" : "neu-pressed"}
               >
-                <Award size={14} color={isUnlocked ? "var(--git-orange)" : "var(--text-muted)"} />
-                <span style={{ fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Award size={14} color={isUnlocked ? "var(--git-orange)" : "var(--text-muted)"} style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '11px', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {badge.name}
                 </span>
               </div>
