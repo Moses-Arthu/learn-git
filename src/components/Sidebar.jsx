@@ -1,8 +1,8 @@
 import React from 'react';
-import { CheckCircle2, Circle, Trophy, Award, GitBranch, Terminal, X } from 'lucide-react';
+import { CheckCircle2, Circle, Trophy, Award, GitBranch, Terminal, X, RotateCcw } from 'lucide-react';
 import { BADGES } from '../data/lessonsData';
 
-export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLessons, score, onCloseMobileMenu }) {
+export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLessons, score, onCloseMobileMenu, onReset }) {
   const total = lessons.length;
   const completedCount = completedLessons.size;
   const progressPct = Math.round((completedCount / total) * 100);
@@ -149,6 +149,24 @@ export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLes
           })}
         </div>
       </div>
+
+      {/* Reset Progress Footer Action */}
+      {onReset && (
+        <button
+          onClick={onReset}
+          className="neu-btn"
+          style={{
+            width: '100%',
+            justifyContent: 'center',
+            padding: '10px',
+            fontSize: '13px',
+            color: 'var(--text-secondary)'
+          }}
+        >
+          <RotateCcw size={14} color="var(--git-orange)" />
+          <span>Reset Learning Progress</span>
+        </button>
+      )}
     </aside>
   );
 }

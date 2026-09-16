@@ -145,6 +145,7 @@ export function App() {
               completedLessons={completedLessons}
               score={completedLessons.size}
               onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
+              onReset={handleReset}
             />
           </div>
 
