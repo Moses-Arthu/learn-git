@@ -28,12 +28,15 @@ export function App() {
 
   // Interactive Repository State for Git Graph & Terminal
   const [repoState, setRepoState] = useState({
-    isInitialized: false,
+    isInitialized: true,
     currentBranch: 'main',
     branches: ['main'],
     commits: [],
     stagingArea: [],
-    workingDirectory: [],
+    workingDirectory: [
+      { name: 'index.html', status: 'untracked' },
+      { name: 'style.css', status: 'untracked' }
+    ],
     remoteUrl: ''
   });
 
@@ -87,18 +90,25 @@ export function App() {
       setCompletedLessons(new Set());
       setXp(0);
       setCurrentLessonId(0);
-      setRepoState({
-        isInitialized: false,
-        currentBranch: 'main',
-        branches: ['main'],
-        commits: [],
-        stagingArea: [],
-        workingDirectory: [],
-        remoteUrl: ''
-      });
+      handleResetRepo();
       localStorage.removeItem('gitlearn_completed');
       localStorage.removeItem('gitlearn_xp');
     }
+  };
+
+  const handleResetRepo = () => {
+    setRepoState({
+      isInitialized: true,
+      currentBranch: 'main',
+      branches: ['main'],
+      commits: [],
+      stagingArea: [],
+      workingDirectory: [
+        { name: 'index.html', status: 'untracked' },
+        { name: 'style.css', status: 'untracked' }
+      ],
+      remoteUrl: ''
+    });
   };
 
   const handleQuizCorrect = () => {
@@ -160,6 +170,7 @@ export function App() {
               setRepoState={setRepoState}
               externalCommand={externalCommand}
               onCommandExecuted={() => setExternalCommand('')}
+              onResetRepo={handleResetRepo}
             />
 
             {/* Lesson Content Card */}

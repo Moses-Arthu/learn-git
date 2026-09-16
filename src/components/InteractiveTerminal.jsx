@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Terminal as TerminalIcon, Play, RotateCcw, HelpCircle, Check, Copy } from 'lucide-react';
 
-export function InteractiveTerminal({ repoState, setRepoState, externalCommand, onCommandExecuted }) {
+export function InteractiveTerminal({ repoState, setRepoState, externalCommand, onCommandExecuted, onResetRepo }) {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState([
     { type: 'comment', text: '# Interactive Neumorphic Git Terminal Simulator' },
@@ -66,21 +66,22 @@ export function InteractiveTerminal({ repoState, setRepoState, externalCommand, 
       if (!subCmd) {
         outputLines = [{ type: 'err', text: 'usage: git [--version] [--help] <command> [<args>]' }];
       } else if (subCmd === 'init') {
-        if (repoState.isInitialized) {
-          outputLines = [{ type: 'warn', text: 'Reinitialized existing Git repository in /project/.git/' }];
-        } else {
-          setRepoState(prev => ({
-            ...prev,
-            isInitialized: true,
-            currentBranch: 'main',
-            branches: ['main'],
-            workingDirectory: [
-              { name: 'index.html', status: 'untracked' },
-              { name: 'style.css', status: 'untracked' }
-            ]
-          }));
-          outputLines = [{ type: 'out', text: 'Initialized empty Git repository in /project/.git/' }];
-        }
+        setRepoState({
+          isInitialized: true,
+          currentBranch: 'main',
+          branches: ['main'],
+          commits: [],
+          stagingArea: [],
+          workingDirectory: [
+            { name: 'index.html', status: 'untracked' },
+            { name: 'style.css', status: 'untracked' }
+          ],
+          remoteUrl: ''
+        });
+        outputLines = [
+          { type: 'out', text: 'Initialized empty Git repository in /project/.git/' },
+          { type: 'comment', text: '# Hint: run "git status" to see your working directory.' }
+        ];
       } else if (!repoState.isInitialized && subCmd !== 'config' && subCmd !== '--version') {
         outputLines = [{ type: 'err', text: 'fatal: not a git repository (or any of the parent directories): .git' }];
       } else if (subCmd === 'status') {
@@ -316,6 +317,22 @@ export function InteractiveTerminal({ repoState, setRepoState, externalCommand, 
           <button onClick={() => setHistory([])} className="neu-btn neu-icon-btn" style={{ width: '30px', height: '30px' }} title="Clear Console">
             <RotateCcw size={14} />
           </button>
+          {onResetRepo && (
+            <button
+              onClick={() => {
+                onResetRepo();
+                setHistory([
+                  { type: 'comment', text: '# Repo reset — fresh working directory.' },
+                  { type: 'out', text: 'Run "git status" to see untracked files. Try git add . then git commit!' }
+                ]);
+              }}
+              className="neu-btn"
+              style={{ fontSize: '11px', padding: '4px 10px', color: 'var(--yellow-accent)', borderRadius: '8px' }}
+              title="Reset repository to fresh state"
+            >
+              Reset Repo
+            </button>
+          )}
         </div>
       </div>
 
