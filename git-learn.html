@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git from Scratch</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --accent: #f78166;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --yellow: #d29922;
+    --purple: #bc8cff;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sidebar-logo .brand {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .sidebar-logo .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .progress-bar-wrap {
+    padding: 0 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .nav-section {
+    padding: 6px 20px 4px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--muted);
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  .nav-item.active {
+    color: var(--text);
+    background: rgba(247,129,102,0.08);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+
+  .nav-item.done .nav-dot { background: var(--green); }
+  .nav-item.done .nav-check { display: inline; }
+
+  .nav-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  /* Main */
+  .main {
+    flex: 1;
+    padding: 40px 48px;
+    max-width: 820px;
+  }
+
+  .lesson { display: none; }
+  .lesson.active { display: block; }
+
+  .lesson-header {
+    margin-bottom: 32px;
+  }
+
+  .lesson-eyebrow {
+    font-size: 12px;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .lesson-title {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .lesson-intro {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 620px;
+  }
+
+  /* Content blocks */
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .concept-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .concept-card p, .concept-card li {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .concept-card ul { padding-left: 18px; }
+  .concept-card li { margin-bottom: 4px; }
+
+  /* Terminal block */
+  .terminal {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .terminal-bar {
+    background: var(--surface2);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .terminal-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .terminal-bar span {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 8px;
+    font-family: var(--mono);
+  }
+
+  .terminal-body {
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .cmd { color: var(--green); }
+  .cmd::before { content: '$ '; color: var(--muted); }
+  .out { color: var(--muted); padding-left: 2px; }
+  .comment { color: #4a5568; }
+  .highlight { color: var(--blue); }
+  .warn { color: var(--yellow); }
+  .err { color: var(--accent); }
+
+  /* Analogy box */
+  .analogy {
+    background: rgba(88,166,255,0.06);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .analogy strong { color: var(--blue); }
+
+  /* Visual diagram */
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: var(--muted);
+    overflow-x: auto;
+  }
+
+  .diagram .node { color: var(--purple); font-weight: 700; }
+  .diagram .arrow { color: var(--accent); }
+  .diagram .label { color: var(--green); }
+
+  /* Quiz */
+  .quiz-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .quiz-question {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .quiz-opt {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+    text-align: left;
+    color: var(--text);
+  }
+
+  .quiz-opt:hover { border-color: var(--blue); background: rgba(88,166,255,0.07); }
+
+  .quiz-opt.correct {
+    border-color: var(--green);
+    background: rgba(63,185,80,0.1);
+    color: var(--green);
+  }
+
+  .quiz-opt.wrong {
+    border-color: var(--accent);
+    background: rgba(247,129,102,0.1);
+    color: var(--accent);
+  }
+
+  .quiz-feedback {
+    margin-top: 14px;
+    font-size: 13.5px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    display: none;
+    line-height: 1.6;
+  }
+
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.good { background: rgba(63,185,80,0.1); color: var(--green); }
+  .quiz-feedback.bad { background: rgba(247,129,102,0.1); color: var(--accent); }
+
+  /* Section label */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 28px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Cheat sheet table */
+  .cmd-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+  }
+
+  .cmd-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--surface2);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cmd-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    vertical-align: top;
+  }
+
+  .cmd-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .cmd-cell {
+    font-family: var(--mono);
+    color: var(--green);
+    white-space: nowrap;
+  }
+
+  .desc-cell { color: var(--muted); line-height: 1.5; }
+
+  /* Nav buttons */
+  .lesson-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: var(--sans);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn:hover { border-color: var(--muted); background: rgba(255,255,255,0.05); }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  .btn.primary:hover { background: #ff9580; border-color: #ff9580; }
+
+  .btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .lesson-counter {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--mono);
+  }
+
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-blue { background: rgba(88,166,255,0.15); color: var(--blue); }
+  .badge-orange { background: rgba(247,129,102,0.15); color: var(--accent); }
+
+  /* Completion screen */
+  .completion-screen {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .completion-screen .trophy {
+    font-size: 64px;
+    margin-bottom: 24px;
+  }
+
+  .completion-screen h2 {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .completion-screen p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 480px;
+    margin: 0 auto 28px;
+    line-height: 1.7;
+  }
+
+  /* Mobile */
+  @media(max-width: 720px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 20px; }
+    .lesson-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">git/learn</div>
+      <div class="sub">Interactive crash course</div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="progressText">0 / 7</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="nav-section">Foundations</div>
+    <div class="nav-item active" data-lesson="0" onclick="goTo(0)">
+      <span class="nav-dot"></span> What is Git?
+    </div>
+    <div class="nav-item" data-lesson="1" onclick="goTo(1)">
+      <span class="nav-dot"></span> Setup & Config
+    </div>
+    <div class="nav-item" data-lesson="2" onclick="goTo(2)">
+      <span class="nav-dot"></span> Your First Repo
+    </div>
+    <div class="nav-item" data-lesson="3" onclick="goTo(3)">
+      <span class="nav-dot"></span> Staging & Commits
+    </div>
+
+    <div class="nav-section">Branching</div>
+    <div class="nav-item" data-lesson="4" onclick="goTo(4)">
+      <span class="nav-dot"></span> Branches
+    </div>
+    <div class="nav-item" data-lesson="5" onclick="goTo(5)">
+      <span class="nav-dot"></span> Merging
+    </div>
+
+    <div class="nav-section">Remote</div>
+    <div class="nav-item" data-lesson="6" onclick="goTo(6)">
+      <span class="nav-dot"></span> GitHub & Remotes
+    </div>
+    <div class="nav-item" data-lesson="7" onclick="goTo(7)">
+      <span class="nav-dot"></span> Quick Reference
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- Lesson 0: What is Git -->
+    <div class="lesson active" id="lesson-0">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 01 · FOUNDATIONS</div>
+        <div class="lesson-title">What is Git?</div>
+        <div class="lesson-intro">Git is a version control system — a tool that tracks every change you make to your code, so you can go back in time, work in parallel, and collaborate with others without fear.</div>
+      </div>
+
+      <div class="analogy">
+        <strong>Analogy:</strong> Think of Git like Google Docs' version history, but for your entire project folder. Every time you hit "save" (called a <em>commit</em>), Git takes a snapshot. You can always go back to any snapshot.
+      </div>
+
+      <div class="section-label">Why do developers use Git?</div>
+      <div class="concept-card">
+        <h3>🕰 Time travel</h3>
+        <p>Made a mistake? Broke something that was working? Git lets you instantly go back to any previous version of your code.</p>
+      </div>
+      <div class="concept-card">
+        <h3>🌿 Parallel work</h3>
+        <p>Work on a new feature without touching the stable version of your code, using <em>branches</em>. Merge when it's ready.</p>
+      </div>
+      <div class="concept-card">
+        <h3>🤝 Collaboration</h3>
+        <p>Multiple developers can work on the same project simultaneously. Git merges everyone's work together and flags conflicts.</p>
+      </div>
+
+      <div class="section-label">Git vs GitHub — not the same thing!</div>
+      <div class="diagram">
+<span class="node">Git</span>          = the tool installed on your computer. It tracks changes locally.
+<span class="node">GitHub</span>       = a website that hosts your Git repos online so you can share &amp; backup.
+<span class="node">GitLab / Bitbucket</span> = other websites that do the same thing as GitHub.
+      </div>
+
+      <div class="section-label">Quick check</div>
+      <div class="quiz-block">
+        <div class="quiz-question">Which of the following best describes what Git does?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false, 'q0')">A text editor for writing code</button>
+          <button class="quiz-opt" onclick="answer(this, true, 'q0')">A tool that tracks changes to files over time</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q0')">A website for hosting projects online</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q0')">A programming language</button>
+        </div>
+        <div class="quiz-feedback" id="q0-feedback"></div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" disabled>← Previous</button>
+        <span class="lesson-counter" id="counter-0">1 / 8</span>
+        <button class="btn primary" onclick="next(0)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Lesson 1: Setup -->
+    <div class="lesson" id="lesson-1">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 02 · FOUNDATIONS</div>
+        <div class="lesson-title">Setup & Configuration</div>
+        <div class="lesson-intro">Before using Git, you install it and tell it who you are. Git will attach your name and email to every commit you make.</div>
+      </div>
+
+      <div class="section-label">1. Install Git</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># Check if Git is already installed</div>
+          <div class="cmd">git --version</div>
+          <div class="out">git version 2.43.0</div>
+          <br>
+          <div class="comment"># If not installed:</div>
+          <div class="comment"># Windows: download from https://git-scm.com</div>
+          <div class="comment"># macOS:   brew install git</div>
+          <div class="comment"># Linux:   sudo apt install git</div>
+        </div>
+      </div>
+
+      <div class="section-label">2. Tell Git who you are (one-time setup)</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="cmd">git config --global user.name "Moses"</div>
+          <div class="cmd">git config --global user.email "moses@example.com"</div>
+          <br>
+          <div class="comment"># Verify your settings</div>
+          <div class="cmd">git config --list</div>
+          <div class="out highlight">user.name=Moses</div>
+          <div class="out highlight">user.email=moses@example.com</div>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <h3>💡 What does <code>--global</code> mean?</h3>
+        <p>It applies this setting to all repositories on your computer. You only need to do this once. Without <code>--global</code>, the setting only applies to the current repo.</p>
+      </div>
+
+      <div class="section-label">Quick check</div>
+      <div class="quiz-block">
+        <div class="quiz-question">What is the purpose of <code>git config --global user.name</code>?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false, 'q1')">To set a username for logging into GitHub</button>
+          <button class="quiz-opt" onclick="answer(this, true, 'q1')">To attach your name to every commit you make</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q1')">To create a new repository</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q1')">To install Git on your system</button>
+        </div>
+        <div class="quiz-feedback" id="q1-feedback"></div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" onclick="goTo(0)">← Previous</button>
+        <span class="lesson-counter">2 / 8</span>
+        <button class="btn primary" onclick="next(1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Lesson 2: First Repo -->
+    <div class="lesson" id="lesson-2">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 03 · FOUNDATIONS</div>
+        <div class="lesson-title">Your First Repository</div>
+        <div class="lesson-intro">A <em>repository</em> (repo) is a folder that Git is tracking. You either create a new one with <code>git init</code> or copy an existing one with <code>git clone</code>.</div>
+      </div>
+
+      <div class="analogy">
+        <strong>Analogy:</strong> Running <code>git init</code> is like placing a <em>surveillance camera</em> in your project folder. From that moment on, Git watches everything that changes inside it.
+      </div>
+
+      <div class="section-label">Creating a new repo from scratch</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># Create a new folder for your project</div>
+          <div class="cmd">mkdir my-project</div>
+          <div class="cmd">cd my-project</div>
+          <br>
+          <div class="comment"># Turn it into a Git repository</div>
+          <div class="cmd">git init</div>
+          <div class="out">Initialized empty Git repository in /my-project/.git/</div>
+          <br>
+          <div class="comment"># Check the status (nothing tracked yet)</div>
+          <div class="cmd">git status</div>
+          <div class="out warn">On branch main</div>
+          <div class="out warn">No commits yet</div>
+        </div>
+      </div>
+
+      <div class="section-label">Cloning an existing repo</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># Download a repo from GitHub to your machine</div>
+          <div class="cmd">git clone https://github.com/username/project.git</div>
+          <div class="out">Cloning into 'project'...</div>
+          <div class="out">done.</div>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <h3>📁 What is the <code>.git</code> folder?</h3>
+        <p>When you run <code>git init</code>, Git creates a hidden <code>.git/</code> folder inside your project. This is where Git stores all the history and tracking data. <strong>Never delete it manually.</strong></p>
+      </div>
+
+      <div class="section-label">Quick check</div>
+      <div class="quiz-block">
+        <div class="quiz-question">You have a project folder. What command turns it into a Git repository?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false, 'q2')">git start</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q2')">git create</button>
+          <button class="quiz-opt" onclick="answer(this, true, 'q2')">git init</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q2')">git new</button>
+        </div>
+        <div class="quiz-feedback" id="q2-feedback"></div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" onclick="goTo(1)">← Previous</button>
+        <span class="lesson-counter">3 / 8</span>
+        <button class="btn primary" onclick="next(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Lesson 3: Staging & Commits -->
+    <div class="lesson" id="lesson-3">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 04 · FOUNDATIONS</div>
+        <div class="lesson-title">Staging & Commits</div>
+        <div class="lesson-intro">This is the core of Git's daily workflow. You make changes, <em>stage</em> what you want to save, then <em>commit</em> to lock in a snapshot.</div>
+      </div>
+
+      <div class="analogy">
+        <strong>Analogy:</strong> Think of it like packing a box to ship. Your changed files sit on the floor (<em>working directory</em>). You pick some up and put them in the box (<em>staging area</em>). When you tape the box shut, that's a <em>commit</em> — a permanent snapshot.
+      </div>
+
+      <div class="diagram">
+<span class="label">Working Directory</span>    <span class="arrow">──git add──▶</span>   <span class="label">Staging Area</span>    <span class="arrow">──git commit──▶</span>   <span class="label">Repository</span>
+
+  (your files)                              (the box)                          (history)
+      </div>
+
+      <div class="section-label">The full workflow</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># 1. Create or edit a file</div>
+          <div class="cmd">echo "Hello Git" > index.html</div>
+          <br>
+          <div class="comment"># 2. Check what changed</div>
+          <div class="cmd">git status</div>
+          <div class="out err">Untracked files: index.html</div>
+          <br>
+          <div class="comment"># 3. Stage the file (add to the box)</div>
+          <div class="cmd">git add index.html</div>
+          <div class="comment"># Or stage ALL changed files:</div>
+          <div class="cmd">git add .</div>
+          <br>
+          <div class="comment"># 4. Check status again</div>
+          <div class="cmd">git status</div>
+          <div class="out highlight">Changes to be committed: index.html</div>
+          <br>
+          <div class="comment"># 5. Commit (tape the box shut with a message)</div>
+          <div class="cmd">git commit -m "Add homepage"</div>
+          <div class="out">[main (root-commit) a1b2c3d] Add homepage</div>
+          <div class="out"> 1 file changed, 1 insertion(+)</div>
+          <br>
+          <div class="comment"># 6. View commit history</div>
+          <div class="cmd">git log --oneline</div>
+          <div class="out highlight">a1b2c3d Add homepage</div>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <h3>✍️ Writing good commit messages</h3>
+        <ul>
+          <li>Use present tense: "Add login page" not "Added login page"</li>
+          <li>Be specific: "Fix null check in auth module" not "Fix bug"</li>
+          <li>Keep it under 72 characters</li>
+        </ul>
+      </div>
+
+      <div class="section-label">Quick check</div>
+      <div class="quiz-block">
+        <div class="quiz-question">What does <code>git add .</code> do?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false, 'q3')">It saves a permanent snapshot of your changes</button>
+          <button class="quiz-opt" onclick="answer(this, true, 'q3')">It stages all changed files, ready for the next commit</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q3')">It uploads your code to GitHub</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q3')">It creates a new branch</button>
+        </div>
+        <div class="quiz-feedback" id="q3-feedback"></div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" onclick="goTo(2)">← Previous</button>
+        <span class="lesson-counter">4 / 8</span>
+        <button class="btn primary" onclick="next(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Lesson 4: Branches -->
+    <div class="lesson" id="lesson-4">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 05 · BRANCHING</div>
+        <div class="lesson-title">Branches</div>
+        <div class="lesson-intro">Branches let you work on new features or fixes in isolation, without breaking the main working code. They're one of Git's most powerful features.</div>
+      </div>
+
+      <div class="analogy">
+        <strong>Analogy:</strong> Imagine your codebase is a tree trunk (<code>main</code>). When you want to try something new, you grow a branch off the side. The trunk is unaffected until you decide to merge the branch back.
+      </div>
+
+      <div class="diagram">
+        <span class="out">main:   </span><span class="node">A</span> <span class="arrow">──</span> <span class="node">B</span> <span class="arrow">──</span> <span class="node">C</span> <span class="arrow">──────────────────</span> <span class="node">F</span>
+        <br>
+        <span class="out">                              </span><span class="arrow">\</span>
+        <span class="out">feature:                       </span><span class="node">D</span> <span class="arrow">──</span> <span class="node">E</span> <span class="arrow">──────────/</span>
+      </div>
+
+      <div class="section-label">Branch commands</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># See all branches (* = current branch)</div>
+          <div class="cmd">git branch</div>
+          <div class="out highlight">* main</div>
+          <br>
+          <div class="comment"># Create a new branch</div>
+          <div class="cmd">git branch feature/login</div>
+          <br>
+          <div class="comment"># Switch to it</div>
+          <div class="cmd">git checkout feature/login</div>
+          <div class="comment"># Modern shortcut (create + switch at once):</div>
+          <div class="cmd">git checkout -b feature/login</div>
+          <br>
+          <div class="comment"># Work on it, add commits...</div>
+          <div class="cmd">git add .</div>
+          <div class="cmd">git commit -m "Add login form"</div>
+          <br>
+          <div class="comment"># Switch back to main when done</div>
+          <div class="cmd">git checkout main</div>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <h3>🏷 Branch naming conventions</h3>
+        <ul>
+          <li><code>feature/user-auth</code> — new feature</li>
+          <li><code>fix/login-crash</code> — bug fix</li>
+          <li><code>hotfix/payment-error</code> — urgent fix</li>
+          <li><code>main</code> or <code>master</code> — stable production code</li>
+        </ul>
+      </div>
+
+      <div class="section-label">Quick check</div>
+      <div class="quiz-block">
+        <div class="quiz-question">You want to create AND immediately switch to a new branch called <code>fix/typo</code>. Which command does both in one step?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false, 'q4')">git branch fix/typo && git switch</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q4')">git new -b fix/typo</button>
+          <button class="quiz-opt" onclick="answer(this, true, 'q4')">git checkout -b fix/typo</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q4')">git branch --move fix/typo</button>
+        </div>
+        <div class="quiz-feedback" id="q4-feedback"></div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" onclick="goTo(3)">← Previous</button>
+        <span class="lesson-counter">5 / 8</span>
+        <button class="btn primary" onclick="next(4)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Lesson 5: Merging -->
+    <div class="lesson" id="lesson-5">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 06 · BRANCHING</div>
+        <div class="lesson-title">Merging & Conflicts</div>
+        <div class="lesson-intro">When your feature branch is ready, you <em>merge</em> it back into <code>main</code>. Sometimes Git can do this automatically; sometimes it needs your help to resolve a <em>conflict</em>.</div>
+      </div>
+
+      <div class="section-label">Merging a branch</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># Step 1: Switch to the branch you want to merge INTO</div>
+          <div class="cmd">git checkout main</div>
+          <br>
+          <div class="comment"># Step 2: Merge the feature branch into main</div>
+          <div class="cmd">git merge feature/login</div>
+          <div class="out">Updating a1b2c3d..f4e5d6c</div>
+          <div class="out highlight">Fast-forward</div>
+          <div class="out"> login.html | 20 ++++</div>
+          <br>
+          <div class="comment"># Step 3: Delete the branch (optional, it's done)</div>
+          <div class="cmd">git branch -d feature/login</div>
+        </div>
+      </div>
+
+      <div class="section-label">Handling merge conflicts</div>
+      <div class="concept-card">
+        <h3>⚡ What is a conflict?</h3>
+        <p>A conflict happens when two branches changed the <em>same line</em> of the same file differently. Git doesn't know which version to keep — it asks you to decide.</p>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal — conflict markers in your file</span>
+        </div>
+        <div class="terminal-body">
+          <div class="out err">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD (main)</div>
+          <div class="out highlight">Hello World</div>
+          <div class="out err">=======</div>
+          <div class="out warn">Hello Git</div>
+          <div class="out err">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</div>
+          <br>
+          <div class="comment"># Fix: edit the file to keep what you want, then:</div>
+          <div class="cmd">git add index.html</div>
+          <div class="cmd">git commit -m "Resolve merge conflict"</div>
+        </div>
+      </div>
+
+      <div class="section-label">Quick check</div>
+      <div class="quiz-block">
+        <div class="quiz-question">You're on branch <code>main</code> and want to bring in changes from <code>feature/nav</code>. What command do you run?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false, 'q5')">git merge main</button>
+          <button class="quiz-opt" onclick="answer(this, true, 'q5')">git merge feature/nav</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q5')">git checkout feature/nav</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q5')">git combine feature/nav</button>
+        </div>
+        <div class="quiz-feedback" id="q5-feedback"></div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" onclick="goTo(4)">← Previous</button>
+        <span class="lesson-counter">6 / 8</span>
+        <button class="btn primary" onclick="next(5)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Lesson 6: GitHub & Remotes -->
+    <div class="lesson" id="lesson-6">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 07 · REMOTE</div>
+        <div class="lesson-title">GitHub & Remotes</div>
+        <div class="lesson-intro">A <em>remote</em> is a version of your repo hosted online (like GitHub). You <code>push</code> to send your local commits up, and <code>pull</code> to receive new commits from others.</div>
+      </div>
+
+      <div class="diagram">
+<span class="label">Your machine</span>          <span class="arrow">────push────▶</span>   <span class="label">GitHub (remote)</span>
+<span class="label">Your machine</span>          <span class="arrow">◀────pull────</span>   <span class="label">GitHub (remote)</span>
+      </div>
+
+      <div class="section-label">Connecting to GitHub</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#ffbd2e"></div>
+          <div class="terminal-dot" style="background:#27c93f"></div>
+          <span>terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># After creating a repo on GitHub, link it:</div>
+          <div class="cmd">git remote add origin https://github.com/you/project.git</div>
+          <br>
+          <div class="comment"># See your remotes</div>
+          <div class="cmd">git remote -v</div>
+          <div class="out highlight">origin  https://github.com/you/project.git (fetch)</div>
+          <div class="out highlight">origin  https://github.com/you/project.git (push)</div>
+          <br>
+          <div class="comment"># Push your commits to GitHub for the first time</div>
+          <div class="cmd">git push -u origin main</div>
+          <div class="out">Branch 'main' set up to track remote branch 'main' from 'origin'.</div>
+          <br>
+          <div class="comment"># Future pushes (after the first) are just:</div>
+          <div class="cmd">git push</div>
+          <br>
+          <div class="comment"># Pull latest changes from GitHub</div>
+          <div class="cmd">git pull</div>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <h3>🔑 What is <code>origin</code>?</h3>
+        <p><code>origin</code> is just the conventional nickname for your primary remote (usually GitHub). You could name it anything, but everyone uses <code>origin</code> by convention.</p>
+      </div>
+
+      <div class="concept-card">
+        <h3>📤 The typical team workflow</h3>
+        <ul>
+          <li><code>git pull</code> — get latest changes from the team</li>
+          <li>Make your edits on a feature branch</li>
+          <li><code>git add . && git commit -m "..."</code></li>
+          <li><code>git push</code> — share your work</li>
+          <li>Open a <em>Pull Request</em> on GitHub for review</li>
+        </ul>
+      </div>
+
+      <div class="section-label">Quick check</div>
+      <div class="quiz-block">
+        <div class="quiz-question">After committing locally, what command sends those commits up to GitHub?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false, 'q6')">git upload</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q6')">git sync</button>
+          <button class="quiz-opt" onclick="answer(this, true, 'q6')">git push</button>
+          <button class="quiz-opt" onclick="answer(this, false, 'q6')">git send</button>
+        </div>
+        <div class="quiz-feedback" id="q6-feedback"></div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" onclick="goTo(5)">← Previous</button>
+        <span class="lesson-counter">7 / 8</span>
+        <button class="btn primary" onclick="next(6)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Lesson 7: Cheat Sheet -->
+    <div class="lesson" id="lesson-7">
+      <div class="lesson-header">
+        <div class="lesson-eyebrow">LESSON 08 · REFERENCE</div>
+        <div class="lesson-title">Git Quick Reference</div>
+        <div class="lesson-intro">Your complete cheat sheet. Bookmark this and come back whenever you need a reminder.</div>
+      </div>
+
+      <div class="section-label">Setup</div>
+      <table class="cmd-table">
+        <tr><th>Command</th><th>What it does</th></tr>
+        <tr><td class="cmd-cell">git config --global user.name "Name"</td><td class="desc-cell">Set your display name</td></tr>
+        <tr><td class="cmd-cell">git config --global user.email "..."</td><td class="desc-cell">Set your email</td></tr>
+      </table>
+
+      <div class="section-label">Repo</div>
+      <table class="cmd-table">
+        <tr><th>Command</th><th>What it does</th></tr>
+        <tr><td class="cmd-cell">git init</td><td class="desc-cell">Initialize a new repo in current folder</td></tr>
+        <tr><td class="cmd-cell">git clone &lt;url&gt;</td><td class="desc-cell">Copy a remote repo to your machine</td></tr>
+        <tr><td class="cmd-cell">git status</td><td class="desc-cell">See what's changed / staged</td></tr>
+        <tr><td class="cmd-cell">git log --oneline</td><td class="desc-cell">View commit history (compact)</td></tr>
+      </table>
+
+      <div class="section-label">Stage & Commit</div>
+      <table class="cmd-table">
+        <tr><th>Command</th><th>What it does</th></tr>
+        <tr><td class="cmd-cell">git add &lt;file&gt;</td><td class="desc-cell">Stage a specific file</td></tr>
+        <tr><td class="cmd-cell">git add .</td><td class="desc-cell">Stage all changed files</td></tr>
+        <tr><td class="cmd-cell">git commit -m "msg"</td><td class="desc-cell">Commit with a message</td></tr>
+        <tr><td class="cmd-cell">git diff</td><td class="desc-cell">See unstaged changes</td></tr>
+      </table>
+
+      <div class="section-label">Branches</div>
+      <table class="cmd-table">
+        <tr><th>Command</th><th>What it does</th></tr>
+        <tr><td class="cmd-cell">git branch</td><td class="desc-cell">List all branches</td></tr>
+        <tr><td class="cmd-cell">git checkout -b &lt;name&gt;</td><td class="desc-cell">Create and switch to a new branch</td></tr>
+        <tr><td class="cmd-cell">git checkout &lt;name&gt;</td><td class="desc-cell">Switch to an existing branch</td></tr>
+        <tr><td class="cmd-cell">git merge &lt;branch&gt;</td><td class="desc-cell">Merge a branch into current branch</td></tr>
+        <tr><td class="cmd-cell">git branch -d &lt;name&gt;</td><td class="desc-cell">Delete a branch</td></tr>
+      </table>
+
+      <div class="section-label">Remote (GitHub)</div>
+      <table class="cmd-table">
+        <tr><th>Command</th><th>What it does</th></tr>
+        <tr><td class="cmd-cell">git remote add origin &lt;url&gt;</td><td class="desc-cell">Link your repo to GitHub</td></tr>
+        <tr><td class="cmd-cell">git push -u origin main</td><td class="desc-cell">First push to GitHub</td></tr>
+        <tr><td class="cmd-cell">git push</td><td class="desc-cell">Push new commits to GitHub</td></tr>
+        <tr><td class="cmd-cell">git pull</td><td class="desc-cell">Fetch + merge from GitHub</td></tr>
+        <tr><td class="cmd-cell">git fetch</td><td class="desc-cell">Download without merging</td></tr>
+      </table>
+
+      <div class="section-label">Undoing things</div>
+      <table class="cmd-table">
+        <tr><th>Command</th><th>What it does</th></tr>
+        <tr><td class="cmd-cell">git restore &lt;file&gt;</td><td class="desc-cell">Discard uncommitted changes to a file</td></tr>
+        <tr><td class="cmd-cell">git reset HEAD~1</td><td class="desc-cell">Undo last commit (keep changes)</td></tr>
+        <tr><td class="cmd-cell">git revert &lt;hash&gt;</td><td class="desc-cell">Create a new commit that undoes a past one</td></tr>
+        <tr><td class="cmd-cell">git stash</td><td class="desc-cell">Temporarily save uncommitted work</td></tr>
+      </table>
+
+      <div class="completion-screen">
+        <div class="trophy">🎉</div>
+        <h2>You know Git!</h2>
+        <p>You've covered the full beginner workflow — from installing Git to pushing to GitHub. The best way to reinforce this is to <strong>practice on a real project</strong>. Open your terminal and start committing.</p>
+        <button class="btn primary" onclick="goTo(0)" style="margin:0 auto">↺ Start Over</button>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn" onclick="goTo(6)">← Previous</button>
+        <span class="lesson-counter">8 / 8</span>
+        <button class="btn" disabled>Done ✓</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let done = new Set();
+  const total = 8;
+
+  function goTo(n) {
+    document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('lesson-' + n).classList.add('active');
+    document.querySelector('[data-lesson="' + n + '"]').classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function next(current) {
+    done.add(current);
+    updateProgress();
+    const navItem = document.querySelector('[data-lesson="' + current + '"]');
+    if (navItem) navItem.classList.add('done');
+    goTo(current + 1);
+  }
+
+  function updateProgress() {
+    const pct = Math.round((done.size / total) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = done.size + ' / ' + total;
+  }
+
+  function answer(btn, correct, qid) {
+    const block = btn.closest('.quiz-block');
+    const buttons = block.querySelectorAll('.quiz-opt');
+    const feedback = document.getElementById(qid + '-feedback');
+
+    buttons.forEach(b => b.disabled = true);
+
+    if (correct) {
+      btn.classList.add('correct');
+      feedback.className = 'quiz-feedback show good';
+      feedback.textContent = '✓ Correct! ' + getFeedback(qid, true);
+    } else {
+      btn.classList.add('wrong');
+      feedback.className = 'quiz-feedback show bad';
+      feedback.textContent = '✗ Not quite. ' + getFeedback(qid, false);
+      buttons.forEach(b => {
+        if (b.onclick.toString().includes('true')) b.classList.add('correct');
+      });
+    }
+  }
+
+  const feedbacks = {
+    q0: ['Git is a version control system — it records every change made to your project files.', 'Git tracks changes. GitHub is the website. They work together but are separate tools.'],
+    q1: ['Every commit you make will be labeled with this name, so your team knows who made each change.', 'This sets the author name attached to your commits, not your GitHub login credentials.'],
+    q2: ['git init initializes a new Git repository in the current directory.', 'The correct command is git init — it creates the hidden .git folder that enables version tracking.'],
+    q3: ['git add stages files — it prepares them to be included in the next commit. git commit is what actually saves the snapshot.', 'git add stages files for commit; git commit is the actual save. git push sends to GitHub.'],
+    q4: ['The -b flag creates and switches to a new branch in one step.', 'git checkout -b <name> both creates and switches to the new branch simultaneously.'],
+    q5: ['You merge INTO the current branch, so you switch to main first, then run git merge feature/nav.', 'git merge feature/nav — you always run merge while ON the destination branch (main).'],
+    q6: ['git push sends your local commits up to the remote (GitHub).', 'git push is the command. git pull does the reverse — it downloads changes from GitHub.'],
+  };
+
+  function getFeedback(qid, correct) {
+    return feedbacks[qid] ? feedbacks[qid][correct ? 0 : 1] : '';
+  }
+</script>
+</body>
+</html>

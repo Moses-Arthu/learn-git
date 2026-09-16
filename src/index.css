@@ -1,0 +1,302 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Dark Neumorphic Palette (Default) */
+  --bg: #181b20;
+  --surface: #1e2229;
+  --surface-hover: #232831;
+  --text-primary: #e6edf3;
+  --text-secondary: #9da7b5;
+  --text-muted: #64748b;
+  
+  /* Neumorphic Shadows - Dark Mode */
+  --shadow-outset: 8px 8px 18px #111317, -8px -8px 18px #252b35;
+  --shadow-outset-hover: 12px 12px 24px #101216, -12px -12px 24px #262c37;
+  --shadow-outset-sm: 4px 4px 10px #111317, -4px -4px 10px #252b35;
+  --shadow-inset: inset 4px 4px 8px #111317, inset -4px -4px 8px #252b35;
+  --shadow-inset-deep: inset 6px 6px 12px #0f1115, inset -6px -6px 12px #262b35;
+  
+  /* Brand Accents */
+  --git-orange: #f14e32;
+  --git-orange-glow: rgba(241, 78, 50, 0.35);
+  --cyan-accent: #00d2ff;
+  --cyan-glow: rgba(0, 210, 255, 0.3);
+  --green-accent: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.3);
+  --purple-accent: #a855f7;
+  --yellow-accent: #f59e0b;
+  --red-accent: #ef4444;
+
+  --border-light: rgba(255, 255, 255, 0.05);
+  --border-dark: rgba(0, 0, 0, 0.3);
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme='light'] {
+  --bg: #e0e5ec;
+  --surface: #e0e5ec;
+  --surface-hover: #e8eeLine;
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  
+  /* Neumorphic Shadows - Light Mode */
+  --shadow-outset: 8px 8px 18px #a3b1c6, -8px -8px 18px #ffffff;
+  --shadow-outset-hover: 12px 12px 24px #9aa7bc, -12px -12px 24px #ffffff;
+  --shadow-outset-sm: 4px 4px 10px #a3b1c6, -4px -4px 10px #ffffff;
+  --shadow-inset: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+  --shadow-inset-deep: inset 6px 6px 12px #98a5b9, inset -6px -6px 12px #ffffff;
+
+  --border-light: rgba(255, 255, 255, 0.6);
+  --border-dark: rgba(163, 177, 198, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Neumorphic Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  box-shadow: var(--shadow-inset);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface);
+  box-shadow: var(--shadow-outset-sm);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--git-orange);
+}
+
+/* Neumorphic Utility Classes */
+.neu-flat {
+  background: var(--bg);
+  box-shadow: var(--shadow-outset);
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-flat-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-outset-hover);
+}
+
+.neu-pressed {
+  background: var(--bg);
+  box-shadow: var(--shadow-inset);
+  border-radius: 12px;
+  border: 1px solid var(--border-dark);
+}
+
+.neu-pressed-deep {
+  background: var(--bg);
+  box-shadow: var(--shadow-inset-deep);
+  border-radius: 12px;
+}
+
+.neu-btn {
+  background: var(--bg);
+  box-shadow: var(--shadow-outset);
+  color: var(--text-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  padding: 10px 20px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.neu-btn:hover {
+  box-shadow: var(--shadow-outset-hover);
+  color: var(--git-orange);
+  transform: translateY(-2px);
+}
+
+.neu-btn:active, .neu-btn.active {
+  box-shadow: var(--shadow-inset);
+  transform: translateY(0);
+  color: var(--git-orange);
+  border-color: transparent;
+}
+
+.neu-btn-primary {
+  background: linear-gradient(135deg, var(--git-orange), #ff6b4a);
+  color: #ffffff;
+  box-shadow: 4px 4px 14px var(--git-orange-glow), -2px -2px 10px rgba(255, 255, 255, 0.2);
+  border: none;
+}
+
+.neu-btn-primary:hover {
+  color: #ffffff;
+  box-shadow: 6px 6px 20px var(--git-orange-glow), -2px -2px 12px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.neu-btn-primary:active {
+  box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4), inset -3px -3px 6px rgba(255, 255, 255, 0.2);
+  transform: translateY(0);
+}
+
+.neu-icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.neu-input {
+  background: var(--bg);
+  box-shadow: var(--shadow-inset);
+  border: 1px solid var(--border-dark);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.neu-input:focus {
+  border-color: var(--git-orange);
+  box-shadow: var(--shadow-inset), 0 0 0 2px var(--git-orange-glow);
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s infinite ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+/* Neumorphic Progress bar */
+.neu-progress-track {
+  height: 12px;
+  background: var(--bg);
+  box-shadow: var(--shadow-inset);
+  border-radius: 999px;
+  padding: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.neu-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--git-orange) 0%, var(--cyan-accent) 100%);
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px var(--git-orange-glow);
+}
+
+/* Badge styles */
+.neu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  box-shadow: var(--shadow-outset-sm);
+  background: var(--bg);
+}
+
+.neu-badge-orange {
+  color: var(--git-orange);
+  border: 1px solid rgba(241, 78, 50, 0.2);
+}
+
+.neu-badge-cyan {
+  color: var(--cyan-accent);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+}
+
+.neu-badge-green {
+  color: var(--green-accent);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.neu-badge-purple {
+  color: var(--purple-accent);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+/* Responsive Grid / Layout */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg);
+}
+
+.main-content {
+  flex: 1;
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+  }
+}
