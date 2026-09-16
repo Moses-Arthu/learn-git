@@ -297,6 +297,53 @@ body {
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 16px;
+    padding: 12px;
+  }
+  
+  .neu-flat {
+    border-radius: 16px;
+    padding: 16px !important;
+  }
+  
+  .neu-btn {
+    padding: 8px 14px;
+    font-size: 13px;
   }
 }
+
+/* Mobile Sidebar Drawer Overlay */
+@media (max-width: 900px) {
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    z-index: 99;
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  .sidebar-wrapper {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    width: 300px !important;
+    max-width: 85vw;
+    background: var(--bg);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 12px 0 30px rgba(0, 0, 0, 0.5);
+    padding: 16px;
+  }
+
+  .sidebar-wrapper.mobile-open {
+    display: block !important;
+    transform: translateX(0);
+  }
+}
+

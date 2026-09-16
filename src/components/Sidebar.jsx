@@ -1,8 +1,8 @@
 import React from 'react';
-import { CheckCircle2, Circle, Trophy, Award, GitBranch, Terminal } from 'lucide-react';
+import { CheckCircle2, Circle, Trophy, Award, GitBranch, Terminal, X } from 'lucide-react';
 import { BADGES } from '../data/lessonsData';
 
-export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLessons, score }) {
+export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLessons, score, onCloseMobileMenu }) {
   const total = lessons.length;
   const completedCount = completedLessons.size;
   const progressPct = Math.round((completedCount / total) * 100);
@@ -12,15 +12,25 @@ export function Sidebar({ lessons, currentLessonId, onSelectLesson, completedLes
 
   return (
     <aside style={{
-      width: '280px',
-      minWidth: '280px',
+      width: '100%',
       display: 'flex',
       flexDirection: 'column',
       gap: '20px',
-      padding: '24px 18px',
+      padding: '20px 16px',
       borderRadius: '24px',
       height: 'fit-content'
     }} className="neu-flat animate-slide-up">
+      {/* Mobile Header Close */}
+      {onCloseMobileMenu && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '-8px' }} className="mobile-only-header">
+          <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--git-orange)' }}>
+            Course Navigation
+          </span>
+          <button onClick={onCloseMobileMenu} className="neu-btn neu-icon-btn" style={{ width: '32px', height: '32px' }} aria-label="Close menu">
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {/* Overall Progress Card */}
       <div className="neu-pressed" style={{ padding: '16px', borderRadius: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>

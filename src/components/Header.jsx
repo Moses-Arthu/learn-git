@@ -17,7 +17,7 @@ export function Header({ theme, setTheme, xp, progressPct, onReset, toggleMobile
           <GitBranch size={22} color="#ffffff" />
         </button>
         <div>
-          <h1 style={{
+          <h1 className="brand-title" style={{
             fontSize: '20px',
             fontWeight: '800',
             letterSpacing: '-0.02em',
@@ -30,7 +30,7 @@ export function Header({ theme, setTheme, xp, progressPct, onReset, toggleMobile
               PRO
             </span>
           </h1>
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <p className="brand-subtitle" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
             Neumorphic Interactive Git Masterclass
           </p>
         </div>
@@ -39,7 +39,7 @@ export function Header({ theme, setTheme, xp, progressPct, onReset, toggleMobile
       {/* Stats & Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         {/* XP Counter */}
-        <div className="neu-pressed" style={{
+        <div className="neu-pressed xp-counter" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -85,9 +85,24 @@ export function Header({ theme, setTheme, xp, progressPct, onReset, toggleMobile
       </div>
 
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .mobile-only-btn {
             display: inline-flex !important;
+          }
+        }
+        @media (max-width: 640px) {
+          header {
+            padding: 12px 14px !important;
+            gap: 10px;
+          }
+          .brand-subtitle {
+            display: none;
+          }
+          .brand-title {
+            font-size: 16px !important;
+          }
+          .xp-counter {
+            padding: 6px 10px !important;
           }
         }
       `}</style>

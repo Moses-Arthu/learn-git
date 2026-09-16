@@ -124,6 +124,14 @@ export function App() {
 
         {/* Main Grid Layout */}
         <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '28px' }} className="layout-grid">
+          {/* Mobile Backdrop Overlay */}
+          {isMobileMenuOpen && (
+            <div
+              className="sidebar-backdrop"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+          )}
+
           {/* Sidebar */}
           <div className={`sidebar-wrapper ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
             <Sidebar
@@ -136,6 +144,7 @@ export function App() {
               }}
               completedLessons={completedLessons}
               score={completedLessons.size}
+              onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
             />
           </div>
 
