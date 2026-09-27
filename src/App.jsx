@@ -234,7 +234,7 @@ export function App() {
             {currentLesson.isReferenceLesson ? (
               <CheatSheet onTryInTerminal={handleTryInTerminal} />
             ) : (
-              <article className="neu-flat animate-fade-in" style={{ padding: '32px', borderRadius: '24px' }}>
+              <article className="lesson-card neu-flat animate-fade-in" style={{ padding: '32px', borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
                 {/* Lesson Stepper */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                   <LessonStepper />
@@ -244,33 +244,32 @@ export function App() {
                 </div>
 
                 {/* Lesson Header */}
-                <div style={{ marginBottom: '24px' }}>
+                <div style={{ marginBottom: '28px' }}>
                   <div style={{
-                    fontSize: '12px',
-                    fontWeight: '800',
-                    color: 'var(--git-orange)',
-                    fontFamily: 'var(--font-mono)',
-                    letterSpacing: '0.08em',
-                    marginBottom: '8px'
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    fontSize: '11px', fontWeight: '800', color: 'var(--git-orange)',
+                    fontFamily: 'var(--font-mono)', letterSpacing: '0.1em',
+                    marginBottom: '14px', padding: '4px 12px',
+                    borderRadius: '999px',
+                    background: 'rgba(241,78,50,0.1)',
+                    border: '1px solid rgba(241,78,50,0.2)'
                   }}>
                     {currentLesson.eyebrow}
                   </div>
 
                   <h2 style={{
-                    fontSize: '28px',
-                    fontWeight: '800',
-                    lineHeight: '1.2',
-                    marginBottom: '12px',
-                    color: 'var(--text-primary)'
+                    fontSize: '30px', fontWeight: '800', lineHeight: '1.2',
+                    marginBottom: '14px', color: 'var(--text-primary)',
+                    letterSpacing: '-0.02em'
                   }}>
                     {currentLesson.title}
                   </h2>
 
                   <p style={{
-                    fontSize: '16px',
-                    color: 'var(--text-secondary)',
-                    lineHeight: '1.7',
-                    maxWidth: '800px'
+                    fontSize: '16px', color: 'var(--text-secondary)',
+                    lineHeight: '1.75', maxWidth: '720px',
+                    borderLeft: '3px solid var(--border-dark)',
+                    paddingLeft: '16px'
                   }}>
                     {currentLesson.summary}
                   </p>
@@ -278,17 +277,18 @@ export function App() {
 
                 {/* Analogy Box */}
                 {currentLesson.analogy && (
-                  <div className="neu-pressed" style={{
-                    padding: '20px 24px',
-                    borderRadius: '16px',
-                    marginBottom: '28px',
+                  <div style={{
+                    padding: '20px 24px', borderRadius: '18px', marginBottom: '28px',
                     borderLeft: '4px solid var(--cyan-accent)',
-                    background: 'rgba(0, 210, 255, 0.03)'
+                    background: 'linear-gradient(135deg, rgba(0,210,255,0.05) 0%, rgba(0,210,255,0.02) 100%)',
+                    boxShadow: 'inset 0 1px 0 rgba(0,210,255,0.1)',
+                    border: '1px solid rgba(0,210,255,0.12)',
+                    borderLeftColor: 'var(--cyan-accent)'
                   }}>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--cyan-accent)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--cyan-accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       💡 Analogy
                     </div>
-                    <p style={{ fontSize: '14.5px', color: 'var(--text-primary)', lineHeight: '1.6' }}>
+                    <p style={{ fontSize: '14.5px', color: 'var(--text-primary)', lineHeight: '1.7', fontStyle: 'italic' }}>
                       {currentLesson.analogy}
                     </p>
                   </div>
@@ -296,13 +296,25 @@ export function App() {
 
                 {/* Concepts Cards Grid */}
                 {currentLesson.concepts && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '28px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '28px' }}>
                     {currentLesson.concepts.map((concept, idx) => (
-                      <div key={idx} className="neu-flat neu-flat-hover" style={{ padding: '20px', borderRadius: '16px' }}>
-                        <h4 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '8px', color: 'var(--git-orange)' }}>
+                      <div key={idx} className="neu-flat neu-flat-hover" style={{ padding: '20px', borderRadius: '18px', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{
+                          position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+                          background: `linear-gradient(90deg, var(--git-orange), var(--cyan-accent))`
+                        }} />
+                        <div style={{
+                          width: '28px', height: '28px', borderRadius: '8px', marginBottom: '12px',
+                          background: 'rgba(241,78,50,0.12)', border: '1px solid rgba(241,78,50,0.2)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '12px', fontWeight: '800', fontFamily: 'var(--font-mono)', color: 'var(--git-orange)'
+                        }}>
+                          {String.fromCharCode(65 + idx)}
+                        </div>
+                        <h4 style={{ fontSize: '14px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                           {concept.title}
                         </h4>
-                        <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.65' }}>
                           {concept.description}
                         </p>
                       </div>
@@ -335,13 +347,23 @@ export function App() {
 
                 {/* Code / Terminal Examples */}
                 {currentLesson.terminalExamples && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
                     {currentLesson.terminalExamples.map((ex, idx) => (
-                      <div key={idx} className="neu-pressed-deep" style={{ borderRadius: '16px', overflow: 'hidden' }}>
-                        <div style={{ padding: '10px 18px', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-dark)', background: 'rgba(0,0,0,0.1)' }}>
-                          {ex.title}
+                      <div key={idx} style={{ borderRadius: '18px', overflow: 'hidden', background: '#0d1117', boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)' }}>
+                        <div style={{
+                          padding: '10px 16px', fontSize: '12px', fontWeight: '700',
+                          color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.06)',
+                          background: '#161b22',
+                          display: 'flex', alignItems: 'center', gap: '8px'
+                        }}>
+                          <span style={{ display: 'flex', gap: '5px' }}>
+                            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f56', display: 'inline-block' }} />
+                            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e', display: 'inline-block' }} />
+                            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#27c93f', display: 'inline-block' }} />
+                          </span>
+                          <span style={{ marginLeft: '4px' }}>{ex.title}</span>
                         </div>
-                        <pre style={{ padding: '16px 20px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--green-accent)', overflowX: 'auto', lineHeight: '1.7' }}>
+                        <pre style={{ padding: '18px 22px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: '#7ee787', overflowX: 'auto', lineHeight: '1.8', margin: 0 }}>
                           {ex.code}
                         </pre>
                       </div>
@@ -381,36 +403,38 @@ export function App() {
 
             {/* Course Completion Celebration Screen */}
             {completedLessons.size === LESSONS.length && (
-              <div className="neu-flat animate-fade-in" style={{ padding: '40px', textAlign: 'center', borderRadius: '24px' }}>
-                <div style={{ fontSize: '64px', marginBottom: '16px', lineHeight: 1 }}>🏆</div>
-                <h2 style={{ fontSize: '30px', fontWeight: '800', marginBottom: '8px', color: 'var(--git-orange)' }}>
+              <div className="glass-card animate-bounce-in" style={{ padding: '60px 40px', textAlign: 'center', margin: '40px auto', maxWidth: '800px', width: '100%' }}>
+                <div className="animate-float" style={{ fontSize: '72px', marginBottom: '24px', lineHeight: 1, filter: 'drop-shadow(0 10px 20px rgba(245,158,11,0.3))' }}>🏆</div>
+                <h2 style={{ fontSize: '36px', fontWeight: '900', marginBottom: '16px', color: 'var(--git-orange)', letterSpacing: '-0.03em', textShadow: 'var(--glow-orange)' }}>
                   You Mastered Git!
                 </h2>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <span className="neu-badge neu-badge-orange" style={{ fontSize: '14px', padding: '4px 16px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                  <span className="tag-pill" style={{ fontSize: '14px', padding: '6px 20px', background: 'rgba(245,158,11,0.15)', color: 'var(--yellow-accent)', borderColor: 'rgba(245,158,11,0.3)' }}>
                     ✨ {xp} XP Earned
                   </span>
-                  <span className="neu-badge neu-badge-green" style={{ fontSize: '14px', padding: '4px 16px' }}>
+                  <span className="tag-pill" style={{ fontSize: '14px', padding: '6px 20px', background: 'rgba(16,185,129,0.15)', color: 'var(--green-accent)', borderColor: 'rgba(16,185,129,0.3)' }}>
                     8/8 Lessons
                   </span>
                 </div>
-                <p style={{ fontSize: '16px', color: 'var(--text-secondary)', maxWidth: '580px', margin: '0 auto 28px', lineHeight: '1.7' }}>
-                  You completed all 8 lessons, passed the quizzes, and practiced with the interactive terminal. You're ready for real-world version control!
+                <p style={{ fontSize: '18px', color: 'var(--text-secondary)', maxWidth: '640px', margin: '0 auto 36px', lineHeight: '1.8' }}>
+                  You completed all lessons, passed the quizzes, and practiced with the interactive terminal. You are ready for real-world version control!
                 </p>
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
                     onClick={handleShareCompletion}
-                    className="neu-btn"
+                    className="neu-btn-ghost"
                     aria-label="Share your achievement"
+                    style={{ minWidth: '200px', justifyContent: 'center' }}
                   >
-                    <Share2 size={16} color="var(--cyan-accent)" /> Share Achievement
+                    <Share2 size={18} color="var(--cyan-accent)" /> Share Achievement
                   </button>
                   <button
                     onClick={handleReset}
-                    className="neu-btn neu-btn-primary"
+                    className="neu-btn-cyan"
                     aria-label="Restart the course"
+                    style={{ minWidth: '200px', justifyContent: 'center' }}
                   >
-                    <RotateCcw size={16} /> Restart Course
+                    <RotateCcw size={18} /> Restart Course
                   </button>
                 </div>
               </div>

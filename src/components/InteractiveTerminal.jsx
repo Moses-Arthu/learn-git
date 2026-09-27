@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, Play, RotateCcw, HelpCircle, Check, Copy } from 'lucide-react';
+import { Terminal as TerminalIcon, Play, RotateCcw, Check, Copy, Zap, GitBranch } from 'lucide-react';
 
 export function InteractiveTerminal({ repoState, setRepoState, externalCommand, onCommandExecuted, onResetRepo }) {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState([
-    { type: 'comment', text: '# Interactive Neumorphic Git Terminal Simulator' },
+    { type: 'comment', text: '# Interactive Git Terminal Simulator' },
     { type: 'comment', text: '# Type a git command or click quick action buttons above to execute.' },
     { type: 'out', text: 'Type "help" for a list of supported interactive commands.' }
   ]);
@@ -290,106 +290,303 @@ export function InteractiveTerminal({ repoState, setRepoState, externalCommand, 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const quickCommands = ['git status', 'git add .', 'git log', 'git branch', 'clear'];
+  const branchName = repoState?.currentBranch || 'main';
+  const promptText = `~/repo (${branchName}) $`;
+
   return (
-    <div className="neu-flat animate-fade-in" style={{ borderRadius: '20px', overflow: 'hidden', marginBottom: '28px' }}>
-      {/* Terminal Title Bar */}
-      <div style={{
-        padding: '12px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderBottom: '1px solid var(--border-dark)',
-        background: 'rgba(0,0,0,0.15)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f56' }}></div>
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }}></div>
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#27c93f' }}></div>
-          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <TerminalIcon size={14} color="var(--git-orange)" /> bash — version-control-simulator
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button onClick={handleCopyHistory} className="neu-btn neu-icon-btn" style={{ width: '30px', height: '30px' }} title="Copy Console Log">
-            {copied ? <Check size={14} color="var(--green-accent)" /> : <Copy size={14} />}
-          </button>
-          <button onClick={() => setHistory([])} className="neu-btn neu-icon-btn" style={{ width: '30px', height: '30px' }} title="Clear Console">
-            <RotateCcw size={14} />
-          </button>
-          {onResetRepo && (
-            <button
-              onClick={() => {
-                onResetRepo();
-                setHistory([
-                  { type: 'comment', text: '# Repo reset — fresh working directory.' },
-                  { type: 'out', text: 'Run "git status" to see untracked files. Try git add . then git commit!' }
-                ]);
-              }}
-              className="neu-btn"
-              style={{ fontSize: '11px', padding: '4px 10px', color: 'var(--yellow-accent)', borderRadius: '8px' }}
-              title="Reset repository to fresh state"
-            >
-              Reset Repo
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Terminal Console Output */}
-      <div
-        onClick={() => inputRef.current?.focus()}
-        className="neu-pressed-deep"
-        style={{
-          padding: '20px',
-          minHeight: '220px',
-          maxHeight: '340px',
-          overflowY: 'auto',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '13px',
-          lineHeight: '1.7',
-          cursor: 'text'
-        }}
-      >
-        {history.map((item, idx) => {
-          let color = 'var(--text-primary)';
-          if (item.type === 'comment') color = 'var(--text-muted)';
-          else if (item.type === 'cmd') color = 'var(--green-accent)';
-          else if (item.type === 'err') color = 'var(--red-accent)';
-          else if (item.type === 'warn') color = 'var(--yellow-accent)';
-          else if (item.type === 'highlight') color = 'var(--cyan-accent)';
-          else if (item.type === 'green') color = 'var(--green-accent)';
-
-          return (
-            <div key={idx} style={{ color, wordBreak: 'break-all' }}>
-              {item.type === 'cmd' ? `$ ${item.text}` : item.text}
+    <>
+      <style>{`
+        .mac-term-wrapper {
+          border-radius: 20px;
+          overflow: hidden;
+          margin-bottom: 28px;
+          background-color: #0d1117;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(241,78,50,0.15);
+        }
+        .mac-term-header {
+          padding: 12px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background-color: #161b22;
+          user-select: none;
+        }
+        .mac-dot {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          display: inline-block;
+          transition: filter 0.2s;
+          cursor: pointer;
+        }
+        .mac-dot:hover {
+          filter: brightness(0.8);
+        }
+        .mac-dot.red { background: #ff5f56; }
+        .mac-dot.yellow { background: #ffbd2e; }
+        .mac-dot.green { background: #27c93f; }
+        
+        .mac-term-title-center {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 13px;
+          font-weight: 500;
+          color: #8b949e;
+          font-family: var(--font-mono, monospace);
+        }
+        .term-toolbar-btn {
+          background: transparent;
+          border: none;
+          color: #8b949e;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+        }
+        .term-toolbar-btn:hover {
+          background: rgba(255,255,255,0.1);
+          color: #c9d1d9;
+        }
+        
+        .mac-term-output {
+          padding: 20px 24px;
+          min-height: 260px;
+          max-height: 400px;
+          overflow-y: auto;
+          font-family: var(--font-mono, 'Menlo', 'Monaco', 'Courier New', monospace);
+          font-size: 14px;
+          line-height: 1.8;
+          cursor: text;
+          background-color: #0d1117;
+        }
+        
+        .quick-actions-bar {
+          display: flex;
+          gap: 10px;
+          padding: 12px 24px;
+          background: #0d1117;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .quick-actions-bar::-webkit-scrollbar {
+          display: none;
+        }
+        .quick-action-pill {
+          background: rgba(46, 160, 67, 0.1);
+          border: 1px solid rgba(46, 160, 67, 0.4);
+          color: #3fb950;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-family: var(--font-mono, monospace);
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .quick-action-pill:hover {
+          background: rgba(46, 160, 67, 0.2);
+          box-shadow: 0 0 10px rgba(46, 160, 67, 0.3);
+        }
+        
+        .term-line {
+          animation: term-fade-in 0.3s ease-out forwards;
+          opacity: 0;
+        }
+        
+        @keyframes term-fade-in {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .term-line-cmd {
+          border-left: 3px solid var(--git-orange, #f14e32);
+          padding-left: 12px;
+          margin-left: -15px;
+          margin-top: 8px;
+          margin-bottom: 4px;
+        }
+        
+        .blinking-cursor {
+          display: inline-block;
+          width: 8px;
+          height: 15px;
+          background-color: #8b949e;
+          animation: blink 1s step-end infinite;
+          vertical-align: middle;
+          margin-left: 2px;
+        }
+        
+        .blinking-dollar {
+          animation: blink 1.5s step-end infinite;
+        }
+        
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        
+        .branch-pill {
+          background: rgba(241, 78, 50, 0.15);
+          color: #f14e32;
+          padding: 4px 10px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          border: 1px solid rgba(241, 78, 50, 0.3);
+        }
+      `}</style>
+      
+      <div className="mac-term-wrapper animate-fade-in">
+        {/* Terminal Header */}
+        <div className="mac-term-header" style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="mac-dot red"></div>
+            <div className="mac-dot yellow"></div>
+            <div className="mac-dot green"></div>
+          </div>
+          
+          <div className="mac-term-title-center">
+            bash — git simulator
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="branch-pill">
+              <GitBranch size={12} />
+              {branchName}
             </div>
-          );
-        })}
-
-        {/* Live Prompt Input Line */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-          <span style={{ color: 'var(--git-orange)', fontWeight: '700' }}>$</span>
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a command (e.g. git status, git init)..."
-            style={{
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '13px',
-              width: '100%'
-            }}
-          />
+            <button onClick={handleCopyHistory} className="term-toolbar-btn" title="Copy Console Log">
+              {copied ? <Check size={16} color="#3fb950" /> : <Copy size={16} />}
+            </button>
+            <button onClick={() => setHistory([])} className="term-toolbar-btn" title="Clear Console">
+              <RotateCcw size={16} />
+            </button>
+            {onResetRepo && (
+              <button
+                onClick={() => {
+                  onResetRepo();
+                  setHistory([
+                    { type: 'comment', text: '# Repo reset — fresh working directory.' },
+                    { type: 'out', text: 'Run "git status" to see untracked files. Try git add . then git commit!' }
+                  ]);
+                }}
+                className="term-toolbar-btn"
+                style={{ color: '#d29922' }}
+                title="Reset repository to fresh state"
+              >
+                <Zap size={16} />
+              </button>
+            )}
+          </div>
         </div>
-        <div ref={bottomRef} />
+
+        {/* Quick Actions Bar */}
+        <div className="quick-actions-bar">
+          {quickCommands.map(cmd => (
+            <button 
+              key={cmd} 
+              className="quick-action-pill"
+              onClick={() => executeCommand(cmd)}
+            >
+              <TerminalIcon size={12} />
+              {cmd}
+            </button>
+          ))}
+        </div>
+
+        {/* Terminal Output */}
+        <div className="mac-term-output" onClick={() => inputRef.current?.focus()}>
+          {history.map((item, idx) => {
+            // Cap staggered animation to avoid performance issues
+            const animDelay = `${Math.min(idx * 0.05, 1)}s`;
+            
+            if (item.type === 'cmd') {
+              return (
+                <div key={idx} className="term-line term-line-cmd" style={{ animationDelay: animDelay }}>
+                  <span style={{ color: '#8b949e', marginRight: '8px' }}>~/repo ({branchName}) $</span>
+                  <span style={{ color: '#3fb950', fontWeight: '500' }}>{item.text}</span>
+                </div>
+              );
+            }
+            
+            let color = '#c9d1d9'; // default text / out
+            let prefix = null;
+            let style = {};
+            
+            if (item.type === 'comment') {
+              color = '#6e7681';
+              style = { fontStyle: 'italic' };
+            } else if (item.type === 'err') {
+              color = '#ff7b72';
+              prefix = <span style={{ marginRight: '6px' }}>✗</span>;
+            } else if (item.type === 'warn') {
+              color = '#d29922';
+            } else if (item.type === 'highlight') {
+              color = '#00d2ff'; // cyan
+            } else if (item.type === 'green') {
+              color = '#27c93f';
+            } else if (item.type === 'out') {
+              color = '#ffffff';
+            }
+
+            return (
+              <div key={idx} className="term-line" style={{ color, animationDelay: animDelay, wordBreak: 'break-all', ...style }}>
+                {prefix}{item.text}
+              </div>
+            );
+          })}
+
+          {/* Input Line */}
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: '12px' }}>
+            <span style={{ color: '#8b949e', marginRight: '8px', whiteSpace: 'nowrap' }}>
+              ~/repo ({branchName}) <span className="blinking-dollar" style={{ color: 'var(--git-orange, #f14e32)', fontWeight: 'bold' }}>$</span>
+            </span>
+            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#c9d1d9',
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit',
+                  width: '100%',
+                  caretColor: 'transparent' // hide default caret, we use custom
+                }}
+                spellCheck="false"
+                autoComplete="off"
+              />
+              {/* Custom Block Cursor positioned after text */}
+              <span 
+                style={{ 
+                  position: 'absolute', 
+                  left: `${input.length * 8.4}px`, // approximate monospace char width
+                  pointerEvents: 'none'
+                }}
+              >
+                <span className="blinking-cursor"></span>
+              </span>
+            </div>
+          </div>
+          <div ref={bottomRef} style={{ height: '20px' }} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
