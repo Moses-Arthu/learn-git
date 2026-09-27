@@ -42,7 +42,6 @@ export function OnboardingOverlay({ onDismiss }) {
       <div
         className="glass-card onboarding-card"
         onClick={(e) => e.stopPropagation()}
-        style={{ padding: '40px 36px', maxWidth: '520px', width: '100%' }}
       >
         {/* Close button */}
         <button
@@ -55,7 +54,7 @@ export function OnboardingOverlay({ onDismiss }) {
         </button>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+        <div className="onboarding-header">
           <div style={{
             width: '56px', height: '56px', borderRadius: '16px', flexShrink: 0,
             background: 'var(--gradient-brand)',
@@ -65,24 +64,18 @@ export function OnboardingOverlay({ onDismiss }) {
             <GitBranch size={28} color="#ffffff" />
           </div>
           <div>
-            <h2 style={{
-              fontSize: '26px', fontWeight: '900', lineHeight: '1.2',
-              letterSpacing: '-0.03em', color: 'var(--text-primary)'
-            }}>
+            <h2 className="onboarding-title">
               Learn Git in{' '}
               <span style={{ color: 'var(--git-orange)' }}>8 lessons</span>
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            <p className="onboarding-subtitle">
               Interactive terminal · Quizzes · XP rewards
             </p>
           </div>
         </div>
 
         {/* One-sentence pitch */}
-        <p style={{
-          fontSize: '16px', color: 'var(--text-secondary)', lineHeight: '1.7',
-          marginBottom: '8px'
-        }}>
+        <p className="onboarding-pitch">
           This course gives you a <strong style={{ color: 'var(--text-primary)' }}>live Git environment</strong> right
           in your browser — no install needed. Each lesson builds on the last.
         </p>
@@ -93,20 +86,20 @@ export function OnboardingOverlay({ onDismiss }) {
             <div key={panel.title} className="onboarding-panel-item card-hover-lift" role="listitem" style={{ 
               background: 'rgba(255,255,255,0.02)', 
               border: '1px solid rgba(255,255,255,0.05)', 
-              borderRadius: '16px', padding: '20px 16px',
+              borderRadius: '16px',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
             }}>
               <div className="onboarding-panel-icon" style={{ 
                 background: idx === 1 ? 'var(--gradient-cool)' : (idx === 2 ? 'var(--green-accent)' : 'var(--gradient-brand)'),
                 boxShadow: idx === 1 ? 'var(--glow-cyan)' : (idx === 2 ? 'var(--glow-green)' : 'var(--glow-orange)'),
-                width: '44px', height: '44px', borderRadius: '12px', marginBottom: '12px'
+                width: '44px', height: '44px', borderRadius: '12px', marginBottom: '8px'
               }}>
                 {panel.icon}
               </div>
-              <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.3', marginBottom: '6px' }}>
+              <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.2', marginBottom: '4px' }}>
                 {panel.title}
               </span>
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
                 {panel.desc}
               </span>
             </div>
