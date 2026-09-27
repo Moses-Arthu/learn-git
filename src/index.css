@@ -36,7 +36,7 @@
 [data-theme='light'] {
   --bg: #e0e5ec;
   --surface: #e0e5ec;
-  --surface-hover: #e8eeLine;
+  --surface-hover: #e8edf4;
   --text-primary: #2d3748;
   --text-secondary: #4a5568;
   --text-muted: #718096;
@@ -131,6 +131,7 @@ body {
   gap: 8px;
   transition: all 0.2s ease;
   user-select: none;
+  min-height: 44px; /* Accessibility: minimum tap target */
 }
 
 .neu-btn:hover {
@@ -144,6 +145,12 @@ body {
   transform: translateY(0);
   color: var(--git-orange);
   border-color: transparent;
+}
+
+/* Focus ring for keyboard navigation accessibility */
+.neu-btn:focus-visible {
+  outline: 2px solid var(--git-orange);
+  outline-offset: 3px;
 }
 
 .neu-btn-primary {
@@ -165,8 +172,8 @@ body {
 }
 
 .neu-icon-btn {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   padding: 0;
   display: inline-flex;
@@ -193,7 +200,7 @@ body {
   box-shadow: var(--shadow-inset), 0 0 0 2px var(--git-orange-glow);
 }
 
-/* Animations */
+/* ─── Animations ─────────────────────────────────────────── */
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.08); }
@@ -209,6 +216,24 @@ body {
   to { opacity: 1; }
 }
 
+@keyframes xp-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); color: var(--yellow-accent); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes onboarding-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes step-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
 .animate-pulse-glow {
   animation: pulse-glow 2.5s infinite ease-in-out;
 }
@@ -221,7 +246,11 @@ body {
   animation: fadeIn 0.3s ease-in-out forwards;
 }
 
-/* Neumorphic Progress bar */
+.animate-xp-pop {
+  animation: xp-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Progress Bar ─────────────────────────────────────────── */
 .neu-progress-track {
   height: 12px;
   background: var(--bg);
@@ -240,7 +269,7 @@ body {
   box-shadow: 0 0 10px var(--git-orange-glow);
 }
 
-/* Badge styles */
+/* ─── Badge styles ─────────────────────────────────────────── */
 .neu-badge {
   display: inline-flex;
   align-items: center;
@@ -274,7 +303,157 @@ body {
   border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
-/* Responsive Grid / Layout */
+/* ─── Lesson Stepper Dots ──────────────────────────────────── */
+.lesson-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.lesson-stepper-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.lesson-stepper-dot.completed {
+  background: var(--green-accent);
+  box-shadow: 0 0 6px var(--green-glow);
+}
+
+.lesson-stepper-dot.active {
+  background: var(--git-orange);
+  box-shadow: 0 0 8px var(--git-orange-glow);
+  width: 24px;
+  border-radius: 999px;
+  animation: step-pop 0.3s ease;
+}
+
+.lesson-stepper-dot.incomplete {
+  background: var(--text-muted);
+  opacity: 0.35;
+}
+
+.lesson-stepper-dot:hover:not(.active) {
+  opacity: 0.7;
+  transform: scale(1.2);
+}
+
+/* ─── Onboarding Overlay ───────────────────────────────────── */
+.onboarding-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.25s ease;
+}
+
+.onboarding-card {
+  background: var(--bg);
+  box-shadow: var(--shadow-outset), 0 0 60px rgba(241, 78, 50, 0.15);
+  border-radius: 28px;
+  border: 1px solid var(--border-light);
+  padding: 40px 36px;
+  max-width: 520px;
+  width: 100%;
+  animation: onboarding-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.onboarding-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 28px 0;
+}
+
+.onboarding-panel-item {
+  background: var(--bg);
+  box-shadow: var(--shadow-inset);
+  border-radius: 16px;
+  border: 1px solid var(--border-dark);
+  padding: 16px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.onboarding-panel-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--git-orange), #ff6b4a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px var(--git-orange-glow);
+  flex-shrink: 0;
+}
+
+/* ─── Sticky mobile lesson nav ─────────────────────────────── */
+.lesson-nav-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-dark);
+}
+
+/* ─── Keyboard hint pill ───────────────────────────────────── */
+.kbd-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.kbd {
+  background: var(--bg);
+  box-shadow: var(--shadow-outset-sm);
+  border: 1px solid var(--border-dark);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* ─── Next-up callout ──────────────────────────────────────── */
+.next-up-callout {
+  background: var(--bg);
+  box-shadow: var(--shadow-inset);
+  border-radius: 14px;
+  border: 1px solid var(--border-dark);
+  border-left: 3px solid var(--cyan-accent);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.next-up-callout:hover {
+  border-left-color: var(--git-orange);
+  box-shadow: var(--shadow-outset-sm);
+}
+
+/* ─── Layout ───────────────────────────────────────────────── */
 .app-container {
   display: flex;
   min-height: 100vh;
@@ -309,9 +488,27 @@ body {
     padding: 8px 14px;
     font-size: 13px;
   }
+
+  .lesson-nav-footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    margin-top: 24px;
+    padding: 12px 0 16px;
+    z-index: 10;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.25);
+  }
+
+  .onboarding-panel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-card {
+    padding: 28px 20px;
+  }
 }
 
-/* Mobile Sidebar Drawer Overlay */
+/* ─── Mobile Sidebar Drawer Overlay ───────────────────────── */
 @media (max-width: 900px) {
   .sidebar-backdrop {
     position: fixed;
@@ -347,3 +544,13 @@ body {
   }
 }
 
+/* ─── Accessibility: Reduced Motion ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

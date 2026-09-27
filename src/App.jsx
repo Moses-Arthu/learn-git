@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { LESSONS } from './data/lessonsData';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -6,7 +6,8 @@ import { GitGraphVisualizer } from './components/GitGraphVisualizer';
 import { InteractiveTerminal } from './components/InteractiveTerminal';
 import { QuizBlock } from './components/QuizBlock';
 import { CheatSheet } from './components/CheatSheet';
-import { ChevronLeft, ChevronRight, Terminal as TerminalIcon, Sparkles, BookOpen, CheckCircle, RotateCcw } from 'lucide-react';
+import { OnboardingOverlay, shouldShowOnboarding, markOnboardingSeen } from './components/OnboardingOverlay';
+import { ChevronLeft, ChevronRight, Terminal as TerminalIcon, RotateCcw, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export function App() {
@@ -25,6 +26,7 @@ export function App() {
 
   const [externalCommand, setExternalCommand] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(shouldShowOnboarding);
 
   // Interactive Repository State for Git Graph & Terminal
   const [repoState, setRepoState] = useState({
@@ -57,33 +59,44 @@ export function App() {
   const isLastLesson = currentLessonId === LESSONS.length - 1;
   const isFirstLesson = currentLessonId === 0;
 
-  const handleNext = () => {
-    // Mark current lesson completed
+  const markCurrentComplete = useCallback(() => {
     if (!completedLessons.has(currentLessonId)) {
       const updated = new Set(completedLessons).add(currentLessonId);
       setCompletedLessons(updated);
-      setXp(prev => prev + 50); // 50 XP per lesson completion
-
+      setXp(prev => prev + 50);
       if (updated.size === LESSONS.length) {
-        // Course completion celebration!
-        try {
-          confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
-        } catch (e) {}
+        try { confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } }); } catch (e) {}
       }
     }
+  }, [completedLessons, currentLessonId]);
 
+  const handleNext = useCallback(() => {
+    markCurrentComplete();
     if (currentLessonId < LESSONS.length - 1) {
       setCurrentLessonId(prev => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
+  }, [currentLessonId, markCurrentComplete]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (currentLessonId > 0) {
       setCurrentLessonId(prev => prev - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
+  }, [currentLessonId]);
+
+  // ── Keyboard navigation (← →) ──────────────────────────────
+  useEffect(() => {
+    const handleKey = (e) => {
+      // Don't hijack when user is typing in an input/textarea
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [handleNext, handlePrev]);
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset your learning progress and XP?")) {
@@ -119,8 +132,52 @@ export function App() {
     setExternalCommand(cmd);
   };
 
+  const handleDismissOnboarding = () => {
+    markOnboardingSeen();
+    setShowOnboarding(false);
+  };
+
+  const handleShareCompletion = () => {
+    const text = `I just completed the Learn Git interactive course and earned ${xp} XP! 🚀 #Git #LearnToCode`;
+    if (navigator.share) {
+      navigator.share({ title: 'I Mastered Git!', text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Achievement copied to clipboard! 🎉');
+      });
+    }
+  };
+
+  // ── Lesson Stepper Dots ────────────────────────────────────
+  const LessonStepper = () => (
+    <div className="lesson-stepper" aria-label="Lesson progress stepper" role="navigation">
+      {LESSONS.map(lesson => {
+        const isActive = lesson.id === currentLessonId;
+        const isCompleted = completedLessons.has(lesson.id);
+        let dotClass = 'lesson-stepper-dot ';
+        if (isActive) dotClass += 'active';
+        else if (isCompleted) dotClass += 'completed';
+        else dotClass += 'incomplete';
+
+        return (
+          <button
+            key={lesson.id}
+            className={dotClass}
+            onClick={() => { setCurrentLessonId(lesson.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            aria-label={`Go to lesson ${lesson.id + 1}: ${lesson.title}${isCompleted ? ' (completed)' : ''}${isActive ? ' (current)' : ''}`}
+            aria-current={isActive ? 'step' : undefined}
+            title={lesson.title}
+          />
+        );
+      })}
+    </div>
+  );
+
   return (
     <div style={{ minHeight: '100vh', padding: '24px 16px' }}>
+      {/* Onboarding Overlay — first visit only */}
+      {showOnboarding && <OnboardingOverlay onDismiss={handleDismissOnboarding} />}
+
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Header Bar */}
         <Header
@@ -178,6 +235,14 @@ export function App() {
               <CheatSheet onTryInTerminal={handleTryInTerminal} />
             ) : (
               <article className="neu-flat animate-fade-in" style={{ padding: '32px', borderRadius: '24px' }}>
+                {/* Lesson Stepper */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                  <LessonStepper />
+                  <span style={{ fontSize: '11px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                    {currentLessonId + 1} / {LESSONS.length}
+                  </span>
+                </div>
+
                 {/* Lesson Header */}
                 <div style={{ marginBottom: '24px' }}>
                   <div style={{
@@ -249,7 +314,7 @@ export function App() {
                 {currentLesson.interactiveSteps && (
                   <div className="neu-pressed" style={{ padding: '20px', borderRadius: '16px', marginBottom: '28px' }}>
                     <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <TerminalIcon size={14} color="var(--green-accent)" /> Interactive Step Launcher
+                      <TerminalIcon size={14} color="var(--green-accent)" /> Try in Terminal
                     </div>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                       {currentLesson.interactiveSteps.map((step, idx) => (
@@ -258,6 +323,8 @@ export function App() {
                           onClick={() => handleTryInTerminal(step.command)}
                           className="neu-btn neu-btn-primary"
                           style={{ fontSize: '13px', padding: '10px 16px', borderRadius: '12px' }}
+                          aria-label={`Try command: ${step.command}`}
+                          title={step.hint}
                         >
                           <TerminalIcon size={15} /> {step.label}: <code>{step.command}</code>
                         </button>
@@ -288,31 +355,25 @@ export function App() {
                 )}
 
                 {/* Lesson Navigation Footer */}
-                <div style={{
-                  display: 'flex',
-                  justify: 'space-between',
-                  alignItems: 'center',
-                  marginTop: '40px',
-                  paddingTop: '24px',
-                  borderTop: '1px solid var(--border-dark)'
-                }}>
+                <div className="lesson-nav-footer">
                   <button
                     onClick={handlePrev}
                     disabled={isFirstLesson}
                     className="neu-btn"
+                    aria-label="Go to previous lesson"
+                    style={{ opacity: isFirstLesson ? 0.4 : 1 }}
                   >
                     <ChevronLeft size={18} /> Previous
                   </button>
 
-                  <div style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    Lesson {currentLessonId + 1} of {LESSONS.length}
-                  </div>
+                  <LessonStepper />
 
                   <button
                     onClick={handleNext}
                     className="neu-btn neu-btn-primary"
+                    aria-label={isLastLesson ? 'Finish course' : 'Go to next lesson'}
                   >
-                    {isLastLesson ? 'Finish Course 🎉' : 'Next Lesson'} <ChevronRight size={18} />
+                    {isLastLesson ? 'Finish 🎉' : 'Next'} <ChevronRight size={18} />
                   </button>
                 </div>
               </article>
@@ -321,20 +382,37 @@ export function App() {
             {/* Course Completion Celebration Screen */}
             {completedLessons.size === LESSONS.length && (
               <div className="neu-flat animate-fade-in" style={{ padding: '40px', textAlign: 'center', borderRadius: '24px' }}>
-                <div style={{ fontSize: '54px', marginBottom: '16px' }}>🏆</div>
-                <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '12px', color: 'var(--git-orange)' }}>
-                  Congratulations! You Mastered Git!
+                <div style={{ fontSize: '64px', marginBottom: '16px', lineHeight: 1 }}>🏆</div>
+                <h2 style={{ fontSize: '30px', fontWeight: '800', marginBottom: '8px', color: 'var(--git-orange)' }}>
+                  You Mastered Git!
                 </h2>
-                <p style={{ fontSize: '16px', color: 'var(--text-secondary)', maxWidth: '580px', margin: '0 auto 24px', lineHeight: '1.7' }}>
-                  You completed all 8 lessons, answered the quizzes, and practiced with the interactive terminal simulator. You are now equipped for real-world software development!
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <span className="neu-badge neu-badge-orange" style={{ fontSize: '14px', padding: '4px 16px' }}>
+                    ✨ {xp} XP Earned
+                  </span>
+                  <span className="neu-badge neu-badge-green" style={{ fontSize: '14px', padding: '4px 16px' }}>
+                    8/8 Lessons
+                  </span>
+                </div>
+                <p style={{ fontSize: '16px', color: 'var(--text-secondary)', maxWidth: '580px', margin: '0 auto 28px', lineHeight: '1.7' }}>
+                  You completed all 8 lessons, passed the quizzes, and practiced with the interactive terminal. You're ready for real-world version control!
                 </p>
-                <button
-                  onClick={handleReset}
-                  className="neu-btn neu-btn-primary"
-                  style={{ margin: '0 auto' }}
-                >
-                  <RotateCcw size={16} /> Restart Course & Practice Again
-                </button>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={handleShareCompletion}
+                    className="neu-btn"
+                    aria-label="Share your achievement"
+                  >
+                    <Share2 size={16} color="var(--cyan-accent)" /> Share Achievement
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    className="neu-btn neu-btn-primary"
+                    aria-label="Restart the course"
+                  >
+                    <RotateCcw size={16} /> Restart Course
+                  </button>
+                </div>
               </div>
             )}
           </main>
