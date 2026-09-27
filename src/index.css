@@ -716,6 +716,12 @@ body {
   width: 100%;
 }
 
+.layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 28px;
+}
+
 @media (max-width: 1024px) {
   .main-content {
     padding: 24px;
@@ -763,6 +769,12 @@ body {
 
 /* ─── Mobile Sidebar Drawer Overlay ───────────────────────── */
 @media (max-width: 900px) {
+  .layout-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
   .sidebar-backdrop {
     position: fixed;
     top: 0;

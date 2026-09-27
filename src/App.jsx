@@ -190,7 +190,7 @@ export function App() {
         />
 
         {/* Main Grid Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '28px' }} className="layout-grid">
+        <div className="layout-grid">
           {/* Mobile Backdrop Overlay */}
           {isMobileMenuOpen && (
             <div

@@ -314,10 +314,11 @@ const styles = {
   workspaceSection: {
     display: 'flex',
     alignItems: 'stretch',
-    gap: '16px'
+    gap: '16px',
+    flexWrap: 'wrap'
   },
   workspaceCard: {
-    flex: 1,
+    flex: '1 1 250px',
     background: 'rgba(255,255,255,0.02)',
     border: '1px solid rgba(255,255,255,0.06)',
     borderRadius: '16px',
