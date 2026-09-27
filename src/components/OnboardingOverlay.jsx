@@ -107,10 +107,7 @@ export function OnboardingOverlay({ onDismiss }) {
         </div>
 
         {/* Keyboard hint */}
-        <p style={{
-          fontSize: '12px', color: 'var(--text-muted)', marginBottom: '24px',
-          fontFamily: 'var(--font-mono)', textAlign: 'center'
-        }}>
+        <p className="onboarding-keyboard-hint">
           Tip: use{' '}
           <span className="kbd" style={{ background: 'rgba(255,255,255,0.05)' }}>←</span>
           {' / '}

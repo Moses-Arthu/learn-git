@@ -336,6 +336,13 @@ export function InteractiveTerminal({ repoState, setRepoState, externalCommand, 
           color: #8b949e;
           font-family: var(--font-mono, monospace);
         }
+        
+        @media (max-width: 600px) {
+          .mac-term-title-center {
+            display: none;
+          }
+        }
+        
         .term-toolbar-btn {
           background: transparent;
           border: none;

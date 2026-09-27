@@ -627,6 +627,14 @@ body {
   margin-bottom: 8px;
 }
 
+.onboarding-keyboard-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
 .onboarding-panel-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -784,6 +792,10 @@ body {
     border-top: 1px solid rgba(255,255,255,0.05);
     margin-left: -16px;
     margin-right: -16px;
+  }
+
+  .onboarding-keyboard-hint {
+    display: none;
   }
 
   .onboarding-panel-grid {
